@@ -1,19 +1,12 @@
-const Metric = require("../../models/Metric");
-const { addMetricJob } = require("../../queues/metricsQueue");
+const axios = require("axios");
 
-const saveMetric = async (payload) => {
-  return Metric.create(payload);
-};
-
-const enqueueMetricJob = async (metric) => {
-  return addMetricJob({
-    metricId: metric._id.toString(),
-    serviceName: metric.serviceName,
-    timestamp: metric.timestamp,
+const sendMetric = async (payload) => {
+  return axios.post(`${process.env.METRICS_SERVICE_URL}/metrics`, payload, {
+    timeout: Number(process.env.METRICS_REQUEST_TIMEOUT_MS || 3000),
+    headers: { "x-internal-service-token": process.env.INTERNAL_SERVICE_TOKEN || "" },
   });
 };
 
 module.exports = {
-  saveMetric,
-  enqueueMetricJob,
+  sendMetric,
 };

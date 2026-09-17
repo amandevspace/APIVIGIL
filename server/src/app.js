@@ -24,6 +24,8 @@ const rootCauseRoutes = require("./routes/rootCauseRoutes");
 const chaosRoutes = require("./routes/chaosRoutes");
 const aggregationRoutes = require("./routes/aggregationRoutes");
 const deepAnalysisRoutes = require("./routes/deepanalysisRoutes");
+const apiRoutes = require("./routes/apiRoutes");
+const proxyRoutes = require("./routes/proxy");
 
 
 
@@ -61,6 +63,7 @@ app.use("/api/alerts", alertRoutes);
 app.use("/api/logs", logRoutes);
 app.use("/api/failures", failureRoutes);
 app.use("/api/predictions", predictionRoutes);
+app.use("/auth", require("./routes/auth"));
 app.use("/api/auth", authRoutes);
 app.use("/api/report", reportRoutes);
 app.use("/api/pdf-report", pdfRoutes);
@@ -71,6 +74,9 @@ app.use("/api/root-cause", rootCauseRoutes);
 app.use("/api/chaos", chaosRoutes);
 app.use("/api/aggregation", aggregationRoutes);
 app.use("/api/deep-analysis", deepAnalysisRoutes);
+app.use("/api/apis", apiRoutes);
+app.use("/proxy", require("./routes/proxy"));
+app.use("/api/proxy", proxyRoutes);
 // 🔥 TEST ROUTES
 // 🔥 Serve React Frontend
 app.use(express.static(path.join(__dirname, "../../client/dist")));

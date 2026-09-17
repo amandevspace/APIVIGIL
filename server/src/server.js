@@ -1,6 +1,10 @@
+const dotenv = require("dotenv");
+dotenv.config({
+  path: require("path").resolve(__dirname, "../../.env"),
+});
+
 const app = require("./app");
 const connectDB = require("./config/db");
-const dotenv = require("dotenv");
 const { connectRedis } = require("./config/redis");
 
 // 🔥 NEW IMPORTS
@@ -9,13 +13,8 @@ const { Server } = require("socket.io");
 const os = require("os");
 
 // 🔥 ENV setup
-dotenv.config({
-  path: require("path").resolve(__dirname, "../../.env"),
-});
-
 // 🔥 DB connect
 connectDB();
-require("./workers/aggregationWorker");
 // 🔥 Create HTTP server
 const server = http.createServer(app);
 

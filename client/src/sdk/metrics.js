@@ -5,7 +5,7 @@
 //   let statusCode;
 
 //   try {
-//     const res = await fetch("http://localhost:5000/test");
+//     const res = await fetch(`${import.meta.env.VITE_API_URL}/test`);
 //     statusCode = res.status;
 //   } catch {
 //     statusCode = 500;
@@ -34,7 +34,7 @@
 //     // 🔥 CPU (approx fallback)
 //     const cpu = Math.random() * 2;
 
-//     await axios.post("http://localhost:5000/api/ingest", {
+//     await axios.post(`${import.meta.env.VITE_API_URL}/api/ingest`, {
 //       serviceName,
 //       endpoint,
 //       method,
@@ -74,7 +74,7 @@
 
 // ─── Config Defaults ──────────────────────────────────────────────────────────
 const DEFAULT_CONFIG = {
-  backendUrl:     'http://localhost:5000/api/ingest',
+  backendUrl:     `${import.meta.env.VITE_API_URL}/api/ingest`,
   batchSize:      10,
   flushInterval:  5000,
   retryAttempts:  3,
@@ -401,14 +401,14 @@ export const sendMetrics = async (serviceName = 'frontend-app', endpoint = '/tes
   try {
     const elapsed = startTimer();
     let statusCode = 200;
-    try { const r = await fetch('http://localhost:5000/test'); statusCode = r.status; }
+    try { const r = await fetch(`${import.meta.env.VITE_API_URL}/test`); statusCode = r.status; }
     catch { statusCode = 500; }
     const responseTimeMs = elapsed();
     const mem = getMemoryMB();
     const cpu = await estimateCPULoad();
     const success = statusCode < 400;
 
-    await fetch('http://localhost:5000/api/ingest', {
+    await fetch(`${import.meta.env.VITE_API_URL}/api/ingest`, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({

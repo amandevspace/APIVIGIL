@@ -2,6 +2,18 @@ const mongoose = require("mongoose");
 
 const metricSchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      index: true,
+    },
+    api_url: { type: String, trim: true, index: true },
+    method: { type: String, uppercase: true, trim: true },
+    status: { type: Number },
+    latency: { type: Number, min: 0 },
+    error: { type: String },
+    requestId: { type: String, index: true },
+    idempotencyKey: { type: String, unique: true, sparse: true },
     serviceName: {
       type: String,
       required: true,

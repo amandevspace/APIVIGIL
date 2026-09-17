@@ -36,6 +36,7 @@ Thumbs.db
 !.vscode/extensions.json
 
 # Docker/local runtime data
+.local-mongo/
 *.pid
 *.seed
 *.local

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useRef } from "react";
-import axios from "axios";
+import api, { API_URL } from "../api";
 import { ObserveAI } from "../sdk/metrics";
 import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, Tooltip,
@@ -573,7 +573,7 @@ function ReportsSection(){
   return(
     <div style={{display:"flex",flexDirection:"column",gap:16}}>
       <SHdr title="Reports" subtitle="Download system reports and analytics exports"
-        action={<button onClick={()=>window.open("http://localhost:5000/api/pdf-report","_blank")} style={{display:"flex",alignItems:"center",gap:7,background:"#4f46e5",border:"none",borderRadius:11,padding:"9px 18px",color:WHITE,fontSize:13,fontWeight:600,cursor:"pointer"}}>
+        action={<button onClick={()=>window.open(`${API_URL}/api/pdf-report`,"_blank")} style={{display:"flex",alignItems:"center",gap:7,background:"#4f46e5",border:"none",borderRadius:11,padding:"9px 18px",color:WHITE,fontSize:13,fontWeight:600,cursor:"pointer"}}>
           <FileText size={14}/> Generate Report
         </button>}/>
       <MiniKPI items={[{label:"Total Reports",val:"47",col:"violet"},{label:"Downloads",val:"128",col:"cyan"},{label:"Last Generated",val:"5 min ago",col:"amber",small:true}]}/>
@@ -591,7 +591,7 @@ function ReportsSection(){
               <td style={{padding:"13px 16px 13px 0"}}><span style={{background:"rgba(139,92,246,0.12)",color:"#a78bfa",borderRadius:6,padding:"2px 8px",fontSize:11,fontWeight:700}}>{r.type}</span></td>
               <td style={{padding:"13px 16px 13px 0",fontSize:12,color:MUTED}}>{r.size}</td>
               <td style={{padding:"13px 0 13px 0"}}>
-                <button onClick={()=>window.open("http://localhost:5000/api/pdf-report","_blank")} style={{fontSize:12,color:"#a78bfa",background:"rgba(139,92,246,0.1)",border:"1px solid rgba(139,92,246,0.2)",borderRadius:7,padding:"4px 12px",cursor:"pointer"}}>Download</button>
+                <button onClick={()=>window.open(`${API_URL}/api/pdf-report`,"_blank")} style={{fontSize:12,color:"#a78bfa",background:"rgba(139,92,246,0.1)",border:"1px solid rgba(139,92,246,0.2)",borderRadius:7,padding:"4px 12px",cursor:"pointer"}}>Download</button>
               </td>
             </tr>
           ))}</tbody>
@@ -778,7 +778,7 @@ function SettingsSection({profile}){
         </div>
         <div>
           <label style={{fontSize:12,color:MUTED,display:"block",marginBottom:6}}>Backend URL</label>
-          <input value="http://localhost:5000" readOnly style={{...inp,fontFamily:"monospace",cursor:"not-allowed",opacity:0.7}}/>
+          <input value={API_URL} readOnly style={{...inp,fontFamily:"monospace",cursor:"not-allowed",opacity:0.7}}/>
         </div>
       </Crd>
       <div style={{display:"flex",gap:10}}>
@@ -798,7 +798,7 @@ function DocsSection(){
     "Getting Started":{icon:"🚀",content:[
       {title:"Installation",body:"Install the ObserveAI SDK in your Node.js project using npm or yarn. The SDK automatically instruments your APIs and sends metrics to your dashboard.\n\nnpm install observeai-sdk\n\nThen initialize it at the top of your app entry point."},
       {title:"Quick Setup",body:"Import and initialize the SDK with your API key. The SDK will automatically detect your Express/Fastify/Koa routes and begin collecting telemetry data in real time."},
-      {title:"Environment Variables",body:"Set the following environment variables:\n\nOBSERVEAI_API_KEY=your_api_key\nOBSERVEAI_PROJECT_ID=your_project_id\nOBSERVEAI_BACKEND_URL=http://localhost:5000"},
+      {title:"Environment Variables",body:`Set the following environment variables:\n\nOBSERVEAI_API_KEY=your_api_key\nOBSERVEAI_PROJECT_ID=your_project_id\nOBSERVEAI_BACKEND_URL=${API_URL}`},
     ]},
     "API Reference":{icon:"📘",content:[
       {title:"GET /api/metrics/mongodb",body:"Returns current MongoDB connection status, database name, collections count, and MongoDB version. Requires no authentication."},
@@ -1355,11 +1355,11 @@ function OverviewSection({mongoData,redisData,systemData,alerts,alertHistory,fai
       </Crd>
 
       <div style={{display:"flex",gap:12,paddingBottom:20}}>
-        <button onClick={()=>window.open("http://localhost:5000/api/pdf-report","_blank")} style={{display:"flex",alignItems:"center",gap:8,background:"#4f46e5",border:"none",borderRadius:11,padding:"10px 20px",color:WHITE,fontSize:13,fontWeight:600,cursor:"pointer",boxShadow:"0 0 20px rgba(79,70,229,0.3)"}}
+        <button onClick={()=>window.open(`${API_URL}/api/pdf-report`,"_blank")} style={{display:"flex",alignItems:"center",gap:8,background:"#4f46e5",border:"none",borderRadius:11,padding:"10px 20px",color:WHITE,fontSize:13,fontWeight:600,cursor:"pointer",boxShadow:"0 0 20px rgba(79,70,229,0.3)"}}
           onMouseEnter={e=>e.currentTarget.style.background="#4338ca"} onMouseLeave={e=>e.currentTarget.style.background="#4f46e5"}>
           <FileText size={14}/> Download PDF Report
         </button>
-        <button onClick={()=>window.open("http://localhost:5000/api/send-alert-email","_blank")} style={{display:"flex",alignItems:"center",gap:8,background:"#dc2626",border:"none",borderRadius:11,padding:"10px 20px",color:WHITE,fontSize:13,fontWeight:600,cursor:"pointer",boxShadow:"0 0 20px rgba(220,38,38,0.3)"}}
+        <button onClick={()=>window.open(`${API_URL}/api/send-alert-email`,"_blank")} style={{display:"flex",alignItems:"center",gap:8,background:"#dc2626",border:"none",borderRadius:11,padding:"10px 20px",color:WHITE,fontSize:13,fontWeight:600,cursor:"pointer",boxShadow:"0 0 20px rgba(220,38,38,0.3)"}}
           onMouseEnter={e=>e.currentTarget.style.background="#b91c1c"} onMouseLeave={e=>e.currentTarget.style.background="#dc2626"}>
           <Bell size={14}/> Send Test Alert Email
         </button>
@@ -1402,7 +1402,7 @@ export default function Dashboard(){
   useEffect(()=>{
     let socket;
     try{
-      socket=io("http://localhost:5000",{transports:["websocket"]});
+      socket=io(API_URL,{transports:["websocket"]});
       socket.on("alerts",(d)=>setAlerts(d));
       socket.on("predictions",(d)=>setPredictions(d));
       socket.on("failures",(d)=>setFailures(d));
@@ -1418,20 +1418,20 @@ export default function Dashboard(){
       const token=localStorage.getItem("token");
       const H={Authorization:`Bearer ${token}`};
       const [mongo,redis,system,alertRes,alertHistRes,logRes,failRes,predRes,analyticsRes,trendsRes,rcRes,deepRes,reportRes,profileRes]=await Promise.allSettled([
-        axios.get("http://localhost:5000/api/metrics/mongodb"),
-        axios.get("http://localhost:5000/api/metrics/redis"),
-        axios.get("http://localhost:5000/api/system/health"),
-        axios.get("http://localhost:5000/api/alerts"),
-        axios.get("http://localhost:5000/api/alerts/history"),
-        axios.get("http://localhost:5000/api/logs"),
-        axios.get("http://localhost:5000/api/failures"),
-        axios.get("http://localhost:5000/api/predictions"),
-        axios.get("http://localhost:5000/api/analytics"),
-        axios.get("http://localhost:5000/api/analytics/trends"),
-        axios.get("http://localhost:5000/api/root-cause"),
-        axios.get("http://localhost:5000/api/deep-analysis"),
-        axios.get("http://localhost:5000/api/report"),
-        token ? axios.get("http://localhost:5000/api/auth/profile",{headers:H}) : Promise.reject('no-token'),
+        api.get("/api/metrics/mongodb"),
+        api.get("/api/metrics/redis"),
+        api.get("/api/system/health"),
+        api.get("/api/alerts"),
+        api.get("/api/alerts/history"),
+        api.get("/api/logs"),
+        api.get("/api/failures"),
+        api.get("/api/predictions"),
+        api.get("/api/analytics"),
+        api.get("/api/analytics/trends"),
+        api.get("/api/root-cause"),
+        api.get("/api/deep-analysis"),
+        api.get("/api/report"),
+        token ? api.get("/api/auth/profile",{headers:H}) : Promise.reject('no-token'),
       ]);
       if(mongo.status==="fulfilled") setMongoData(mongo.value.data);
       if(redis.status==="fulfilled") setRedisData(redis.value.data);
@@ -1477,7 +1477,7 @@ export default function Dashboard(){
     let sdk = null;
     try { sdk = new ObserveAI({
       serviceName:    "dashboard-ui",
-      backendUrl:     "http://localhost:5000/api/ingest",
+      backendUrl:     `${API_URL}/api/ingest`,
       batchSize:      5,
       flushInterval:  5000,
       retryAttempts:  3,

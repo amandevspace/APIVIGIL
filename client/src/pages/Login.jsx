@@ -1,7 +1,7 @@
 // Login.jsx — LAMP UI Theme
 
 import { useState } from "react";
-import axios from "axios";
+import api from "../api";
 import { Shield, Mail, Lock, Eye, EyeOff, Activity } from "lucide-react";
 
 const styles = `
@@ -368,7 +368,7 @@ function Login() {
   const handleLogin = async () => {
     try {
       setLoading(true);
-      const response = await axios.post("/api/auth/login", { email, password });
+      const response = await api.post("/auth/login", { email, password });
       localStorage.setItem("token", response.data.token);
       alert("Login Successful 🚀");
       window.location.href = "/";

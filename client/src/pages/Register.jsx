@@ -1,7 +1,7 @@
 // Register.jsx — LAMP UI Theme
 
 import { useState } from "react";
-import axios from "axios";
+import api from "../api";
 import { Shield, Mail, Lock, Eye, EyeOff, User, Zap } from "lucide-react";
 
 const styles = `
@@ -418,7 +418,7 @@ function Register() {
   const handleRegister = async () => {
     try {
       setLoading(true);
-      await axios.post("/api/auth/register", {
+      await api.post("/auth/register", {
           name,
           email,
           password,
