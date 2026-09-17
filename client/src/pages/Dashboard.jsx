@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState, useRef } from "react";
-import { useNavigate } from "react-router-dom";
 import api, { API_URL } from "../api";
 import { ObserveAI } from "../sdk/metrics";
 import {
@@ -1428,7 +1427,6 @@ function OverviewSection({mongoData,redisData,systemData,alerts,alertHistory,fai
 
 /* ══ MAIN DASHBOARD ══ */
 export default function Dashboard(){
-  const navigate = useNavigate();
   const [mongoData,setMongoData]=useState(MOCK.mongo);
   const [redisData,setRedisData]=useState(MOCK.redis);
   const [systemData,setSystemData]=useState(MOCK.system);
@@ -1463,17 +1461,14 @@ export default function Dashboard(){
     localStorage.removeItem("token");
     localStorage.removeItem("user");
 
-    navigate("/login", { replace: true });
-
-    // optional hard reset to clear state
-    window.location.reload();
+    window.location.href = "/login";
   };
 
   useEffect(()=>{
     if(!localStorage.getItem("token")){
-      navigate("/login", { replace: true });
+      window.location.href = "/login";
     }
-  },[navigate]);
+  },[]);
 
   /* ── SDK refs ── */
   const sdkRef     = useRef(null);
