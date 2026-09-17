@@ -1,4 +1,4 @@
-# Environment files
+﻿# Environment files
 .env
 .env.*
 !.env.example
@@ -24,6 +24,7 @@ pnpm-debug.log*
 
 # Local caches
 .cache/
+chroma_data/
 .vite/
 .parcel-cache/
 .turbo/
@@ -40,3 +41,5 @@ Thumbs.db
 *.pid
 *.seed
 *.local
+.venv/
+*.wt

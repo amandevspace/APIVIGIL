@@ -26,6 +26,7 @@ const aggregationRoutes = require("./routes/aggregationRoutes");
 const deepAnalysisRoutes = require("./routes/deepanalysisRoutes");
 const apiRoutes = require("./routes/apiRoutes");
 const proxyRoutes = require("./routes/proxy");
+const aiDataRoutes = require("./routes/aiDataRoutes");
 
 
 
@@ -77,6 +78,7 @@ app.use("/api/deep-analysis", deepAnalysisRoutes);
 app.use("/api/apis", apiRoutes);
 app.use("/proxy", require("./routes/proxy"));
 app.use("/api/proxy", proxyRoutes);
+app.use("/", aiDataRoutes);
 // 🔥 TEST ROUTES
 // 🔥 Serve React Frontend
 app.use(express.static(path.join(__dirname, "../../client/dist")));

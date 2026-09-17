@@ -38,6 +38,18 @@ services:
       AI_PORT: 5000
     networks: [apivigil]
 
+  ai-worker:
+    build:
+      context: .
+      dockerfile: ai-service/worker.Dockerfile
+    restart: unless-stopped
+    environment:
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379}
+      MONGO_URI: ${MONGO_URI:-mongodb://mongo:27017/apivigil}
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
+    depends_on: [mongo, redis]
+    networks: [apivigil]
+
   server:
     build:
       context: .

@@ -16,6 +16,8 @@ import {
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { io } from "socket.io-client";
+import AlertsPanel from "../components/AlertsPanel";
+import RootCauseCard from "../components/RootCauseCard";
 
 const BG="rgb(8,8,9)",CARD="#0d0d0f",SIDE="#0a0a0b",BORDER="rgba(255,255,255,0.06)",BSUB="rgba(255,255,255,0.05)",MUTED="#475569",DIM="#64748b",SL3="#94a3b8",SL4="#cbd5e1",WHITE="#ffffff";
 const TTC={backgroundColor:CARD,border:"1px solid rgba(255,255,255,0.09)",borderRadius:10,color:WHITE,fontSize:12};
@@ -985,8 +987,60 @@ function SdkHealthPanel({stats,onView}){
   );
 }
 
+function AIDataSection({metrics,predictions,alerts,insights}){
+  const latencyData=metrics.slice().reverse().map((item,index)=>({
+    name:item.timestamp?new Date(item.timestamp).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}):String(index+1),
+    latency:Number(item.latency??item.requests?.responseTimeMs??0),
+  }));
+  const predictionData=predictions.slice().reverse().map((item,index)=>({
+    name:item.timestamp?new Date(item.timestamp).toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}):String(index+1),
+    latency:Number(item.predictedLatency??item.yhat??0),
+  }));
+  const items=[
+    {label:"Metrics",value:metrics,empty:"No metric history"},
+    {label:"Predictions",value:predictions,empty:"No predictions"},
+    {label:"Alerts",value:alerts,empty:"No alerts"},
+    {label:"Insights",value:insights,empty:"No root-cause insights"},
+  ];
+  return <div style={{display:"flex",flexDirection:"column",gap:14}}>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:14}}>
+      {[
+        {title:"Latency",data:latencyData,color:"#22d3ee",empty:"No latency history"},
+        {title:"Prediction",data:predictionData,color:"#a78bfa",empty:"No predictions"},
+      ].map(({title,data,color,empty})=><Crd key={title} style={{padding:16}}>
+        <div style={{fontSize:12,fontWeight:700,color:SL3,marginBottom:10}}>{title} graph</div>
+        {data.length?<ResponsiveContainer width="100%" height={180}>
+          <LineChart data={data} margin={{top:8,right:8,left:-18,bottom:0}}>
+            <CartesianGrid stroke="rgba(255,255,255,0.06)" vertical={false}/>
+            <XAxis dataKey="name" tick={{fontSize:9,fill:MUTED}} axisLine={false} tickLine={false}/>
+            <YAxis tick={{fontSize:9,fill:MUTED}} axisLine={false} tickLine={false} width={42}/>
+            <Tooltip contentStyle={{background:CARD,border:"1px solid rgba(255,255,255,0.12)",borderRadius:8,color:WHITE,fontSize:11}}/>
+            <Line type="monotone" dataKey="latency" stroke={color} strokeWidth={2} dot={false} activeDot={{r:4}}/>
+          </LineChart>
+        </ResponsiveContainer>:<div style={{height:180,display:"grid",placeItems:"center",fontSize:11,color:MUTED}}>{empty}</div>}
+      </Crd>)}
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(4,minmax(0,1fr))",gap:14}}>
+    {items.map(({label,value,empty})=><Crd key={label} style={{padding:16}}>
+      <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:12}}>
+        <span style={{fontSize:12,fontWeight:700,color:SL3}}>{label}</span>
+        <span style={{fontSize:11,color:"#a78bfa",background:"rgba(167,139,250,0.12)",padding:"3px 8px",borderRadius:999}}>{value.length}</span>
+      </div>
+      {value.slice(0,3).map((item,index)=><div key={item._id||index} style={{padding:"9px 0",borderTop:"1px solid rgba(255,255,255,0.06)",fontSize:11,color:MUTED,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>
+        {label==="Insights"?(item.rootCause||"Insight available"):label==="Predictions"?`${Number(item.predictedLatency||item.yhat||0).toFixed(0)}ms predicted latency`:label==="Alerts"?(item.message||`${Number(item.predictedLatency||0).toFixed(0)}ms anomaly`):`${item.serviceName||item.api_url||"Metric"} · ${item.latency??item.requests?.responseTimeMs??0}ms`}
+      </div>)}
+      {!value.length&&<div style={{fontSize:11,color:MUTED}}>{empty}</div>}
+    </Crd>)}
+    </div>
+    <div style={{display:"grid",gridTemplateColumns:"repeat(2,minmax(0,1fr))",gap:14}}>
+      <AlertsPanel alerts={alerts}/>
+      <RootCauseCard insight={insights[0]}/>
+    </div>
+  </div>;
+}
+
 /* ══ OVERVIEW SECTION ══ */
-function OverviewSection({mongoData,redisData,systemData,alerts,alertHistory,failures,predictions,trendChartData,trendServices,historyData,liveStats,logs,filteredLogs,fetchDashboardData,lastUpdated,sdkStats}){
+function OverviewSection({mongoData,redisData,systemData,alerts,alertHistory,failures,predictions,trendChartData,trendServices,historyData,liveStats,logs,filteredLogs,fetchDashboardData,lastUpdated,sdkStats,apiMetrics,storedPredictions,storedAlerts,insights}){
   const fmtReq=(n)=>n>=1000?`${(n/1000).toFixed(1)}K`:`${n}`;
   const hasLive=liveStats.totalRequests>0||liveStats.totalServices>0;
   const dR=liveStats.prevRequests?Math.abs(liveStats.totalRequests-liveStats.prevRequests):null;
@@ -1019,6 +1073,8 @@ function OverviewSection({mongoData,redisData,systemData,alerts,alertHistory,fai
         <SCrd title="Avg. Latency"    value={hasLive&&liveStats.avgLatency>0?`${liveStats.avgLatency}ms`:"243ms"} delta={dL?`${dL}ms`:"18ms"} up={false} iconEl={<IBox col="amber"><Clock size={16}/></IBox>}/>
         <SCrd title="Incidents"       value={hasLive?liveStats.incidents:alerts.filter(a=>a.type==="critical").length||"3"} delta={dI!==null?String(dI):"1"} up={false} iconEl={<IBox col="orange"><ShieldAlert size={16}/></IBox>}/>
       </div>
+
+      <AIDataSection metrics={apiMetrics} predictions={storedPredictions} alerts={storedAlerts} insights={insights}/>
 
       {/* ── SDK Live Status Banner ── */}
       {sdkStats&&(()=>{
@@ -1394,6 +1450,10 @@ export default function Dashboard(){
   const [showUpgradeModal,setShowUpgradeModal]=useState(false);
   const [showProfileMenu,setShowProfileMenu]=useState(false);
   const [showNotifPanel,setShowNotifPanel]=useState(false);
+  const [apiMetrics,setApiMetrics]=useState([]);
+  const [storedPredictions,setStoredPredictions]=useState([]);
+  const [storedAlerts,setStoredAlerts]=useState([]);
+  const [insights,setInsights]=useState([]);
 
   /* ── SDK refs ── */
   const sdkRef     = useRef(null);
@@ -1460,6 +1520,16 @@ export default function Dashboard(){
           setLiveStats(prev=>({totalServices:rows.length,totalRequests:totalReqs,avgErrorRate:+avgErr.toFixed(2),avgLatency:avgLat,incidents:alertRes.status==="fulfilled"?(alertRes.value.data.alerts??alertRes.value.data).filter(a=>a.type==="critical").length:prev.incidents,prevRequests:prev.totalRequests,prevErrorRate:prev.avgErrorRate,prevLatency:prev.avgLatency,prevIncidents:prev.incidents}));
         }
       }
+      const [historyRes, storedPredRes, storedAlertsRes, insightsRes] = await Promise.allSettled([
+        api.get("/metrics/history"),
+        api.get("/predictions"),
+        api.get("/alerts"),
+        api.get("/insights"),
+      ]);
+      if(historyRes.status==="fulfilled") setApiMetrics(historyRes.value.data.data||[]);
+      if(storedPredRes.status==="fulfilled") setStoredPredictions(storedPredRes.value.data.data||[]);
+      if(storedAlertsRes.status==="fulfilled") setStoredAlerts(storedAlertsRes.value.data.data||[]);
+      if(insightsRes.status==="fulfilled") setInsights(insightsRes.value.data.data||[]);
       /* toasts only shown once on initial load via toastShown ref */
       setLastUpdated(new Date().toLocaleTimeString());
     }catch(e){console.log("Fetch error:",e);}
@@ -1555,7 +1625,7 @@ export default function Dashboard(){
   const SW=sidebarOpen?210:64;
 
   const renderSection=()=>{
-    const p={mongoData,redisData,systemData,alerts,alertHistory,failures,predictions,trendChartData,trendServices,historyData,liveStats,logs,filteredLogs,fetchDashboardData:fetchData,lastUpdated,analytics,rootCauses,deepAnalysis,profile,report,searchTerm,sdkStats};
+    const p={mongoData,redisData,systemData,alerts,alertHistory,failures,predictions,trendChartData,trendServices,historyData,liveStats,logs,filteredLogs,fetchDashboardData:fetchData,lastUpdated,analytics,rootCauses,deepAnalysis,profile,report,searchTerm,sdkStats,apiMetrics,storedPredictions,storedAlerts,insights};
     switch(activeNav){
       case "Overview":       return <OverviewSection {...p}/>;
       case "Services":       return <ServicesSection searchTerm={searchTerm}/>;
