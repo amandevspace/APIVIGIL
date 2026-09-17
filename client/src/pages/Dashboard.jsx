@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import api, { API_URL } from "../api";
 import { ObserveAI } from "../sdk/metrics";
 import {
@@ -723,7 +724,7 @@ function TeamSection({profile,searchTerm=""}){
   );
 }
 
-function SettingsSection({profile}){
+function SettingsSection({profile,handleLogout}){
   const [name,setName]=useState(profile.name||"");
   const [email,setEmail]=useState(profile.email||"");
   const [notif,setNotif]=useState({email:true,slack:false,webhook:true});
@@ -785,7 +786,7 @@ function SettingsSection({profile}){
       </Crd>
       <div style={{display:"flex",gap:10}}>
         <button onClick={save} style={{background:saved?"#22c55e":"#7c3aed",border:"none",borderRadius:11,padding:"11px 28px",color:WHITE,fontSize:14,fontWeight:700,cursor:"pointer",transition:"background 0.3s"}}>{saved?"✓ Saved":"Save Changes"}</button>
-        <button onClick={()=>{localStorage.removeItem("token");window.location.href="/login";}} style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:11,padding:"11px 22px",color:"#f87171",fontSize:14,fontWeight:600,cursor:"pointer"}}>Logout</button>
+        <button onClick={handleLogout} style={{background:"rgba(239,68,68,0.1)",border:"1px solid rgba(239,68,68,0.2)",borderRadius:11,padding:"11px 22px",color:"#f87171",fontSize:14,fontWeight:600,cursor:"pointer"}}>Logout</button>
       </div>
     </div>
   );
@@ -1427,6 +1428,7 @@ function OverviewSection({mongoData,redisData,systemData,alerts,alertHistory,fai
 
 /* ══ MAIN DASHBOARD ══ */
 export default function Dashboard(){
+  const navigate = useNavigate();
   const [mongoData,setMongoData]=useState(MOCK.mongo);
   const [redisData,setRedisData]=useState(MOCK.redis);
   const [systemData,setSystemData]=useState(MOCK.system);
@@ -1454,6 +1456,24 @@ export default function Dashboard(){
   const [storedPredictions,setStoredPredictions]=useState([]);
   const [storedAlerts,setStoredAlerts]=useState([]);
   const [insights,setInsights]=useState([]);
+
+  const handleLogout = () => {
+    console.log("Logout clicked");
+
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+
+    navigate("/login", { replace: true });
+
+    // optional hard reset to clear state
+    window.location.reload();
+  };
+
+  useEffect(()=>{
+    if(!localStorage.getItem("token")){
+      navigate("/login", { replace: true });
+    }
+  },[navigate]);
 
   /* ── SDK refs ── */
   const sdkRef     = useRef(null);
@@ -1638,7 +1658,7 @@ export default function Dashboard(){
       case "Chaos Testing":  return <ChaosSection/>;
       case "Integrations":   return <IntegrationsSection/>;
       case "Team":           return <TeamSection profile={profile} searchTerm={searchTerm}/>;
-      case "Settings":       return <SettingsSection profile={profile}/>;
+      case "Settings":       return <SettingsSection profile={profile} handleLogout={handleLogout}/>;
       case "Docs":           return <DocsSection/>;
       case "Support":        return <SupportSection/>;
       default:               return <OverviewSection {...p}/>;
@@ -1718,7 +1738,7 @@ export default function Dashboard(){
         </button>
       ))}
       <div style={{borderTop:`1px solid ${BORDER}`,marginTop:6,paddingTop:6}}>
-        <button onClick={()=>{localStorage.removeItem("token");window.location.href="/login";}}
+        <button onClick={handleLogout}
           style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:9,border:"none",background:"transparent",color:"#f87171",fontSize:13,cursor:"pointer"}}
           onMouseEnter={e=>e.currentTarget.style.background="rgba(239,68,68,0.09)"}
           onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
@@ -1823,7 +1843,7 @@ export default function Dashboard(){
               <Ico size={15}/><span>{lbl}</span>
             </button>
           ))}
-          <button onClick={()=>{localStorage.removeItem("token");window.location.href="/login";}}
+          <button onClick={handleLogout}
             style={{width:"100%",display:"flex",alignItems:"center",gap:10,padding:"9px 12px",borderRadius:12,border:"1px solid transparent",background:"transparent",color:"#f87171",fontSize:13,cursor:"pointer"}}
             onMouseEnter={e=>e.currentTarget.style.background="rgba(239,68,68,0.09)"}
             onMouseLeave={e=>e.currentTarget.style.background="transparent"}>
