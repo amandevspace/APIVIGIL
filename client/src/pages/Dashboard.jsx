@@ -1662,7 +1662,7 @@ export default function Dashboard(){
 
   /* ── Upgrade Plan Modal ── */
   const UpgradeModal=()=>(
-    <div onClick={()=>setShowUpgradeModal(false)} style={{position:"fixed",inset:0,zIndex:200,background:"rgba(0,0,0,0.7)",backdropFilter:"blur(6px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
+    <div onClick={()=>setShowUpgradeModal(false)} style={{position:"fixed",inset:0,zIndex:1000,background:"rgba(0,0,0,0.7)",backdropFilter:"blur(6px)",display:"flex",alignItems:"center",justifyContent:"center"}}>
       <div onClick={e=>e.stopPropagation()} style={{background:"#0d0d0f",border:"1px solid rgba(139,92,246,0.3)",borderRadius:20,padding:"32px",width:"100%",maxWidth:680,boxShadow:"0 0 80px rgba(124,58,237,0.25)"}}>
         <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:24}}>
           <div>
@@ -1849,7 +1849,7 @@ export default function Dashboard(){
 
       {/* MAIN */}
       <div style={{flex:1,display:"flex",flexDirection:"column",minHeight:"100vh",marginLeft:SW,transition:"margin-left 0.25s ease"}}>
-        <header style={{position:"sticky",top:0,zIndex:40,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 24px",borderBottom:`1px solid ${BSUB}`,background:"rgba(8,8,9,0.96)",backdropFilter:"blur(18px)"}}>
+        <header style={{position:"sticky",top:0,zIndex:500,display:"flex",alignItems:"center",justifyContent:"space-between",padding:"10px 24px",borderBottom:`1px solid ${BSUB}`,background:"rgba(8,8,9,0.96)",backdropFilter:"blur(18px)"}}>
           <div style={{display:"flex",alignItems:"center",gap:14}}>
             <button onClick={()=>setSidebarOpen(o=>!o)} style={{padding:8,borderRadius:8,border:"none",background:"transparent",color:MUTED,cursor:"pointer"}}
               onMouseEnter={e=>{e.currentTarget.style.background="rgba(255,255,255,0.06)";e.currentTarget.style.color=WHITE;}}
